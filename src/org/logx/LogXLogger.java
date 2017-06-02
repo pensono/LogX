@@ -32,13 +32,17 @@ public class LogXLogger {
     }
 
     private Map<String, Object> parseData(Object... data){
-        if (data.length % 2 != 0){
-            throw new RuntimeException("There must be a piece of data for each parameter");
-        }
-
         Map<String, Object> logData = new HashMap<>();
-        for (int i = 0; i < data.length / 2; i++){
-            logData.put((String) data[i * 2], data[i * 2 + 1]);
+        for (int i = 0; i < data.length; i++){
+            if (data[i] instanceof String) {
+                if (i + 1 >= data.length){
+                    throw new RuntimeException("No data for parameter " + data[i]);
+                }
+                logData.put((String) data[i], data[i + 1]);
+                i++;
+            } else {
+                logData.put(data[i].getClass().getSimpleName(), data[i]);
+            }
         }
         return logData;
     }

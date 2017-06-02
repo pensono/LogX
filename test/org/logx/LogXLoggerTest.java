@@ -1,28 +1,55 @@
 package org.logx;
 
 import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Created by Ethan Shea on 5/30/2017.
  */
 public class LogXLoggerTest {
-    @org.junit.Test
+    @Test
     public void testLog() throws Exception {
         LogXLogger logger = new LogXLogger();
-        logger.log("Test message", "data1", "Wow", "data2", 4);
+        logger.audit("Test message", "data1", "Wow", "data2", 4);
 
-        Assert.assertEquals(logger.getMessages().get(0).getData("data1").get(), "Wow");
-        Assert.assertEquals(logger.getMessages().get(0).getData("data2").get(), 4);
+        Assert.assertEquals(getMessageData(logger, 0, "data1"), "Wow");
+        Assert.assertEquals(getMessageData(logger, 0, "data2"), 4);
     }
 
-    @org.junit.Test
+    @Test
+    public void testRichTypedParameters() throws Exception {
+        LogXLogger logger = new LogXLogger();
+
+        logger.audit("Test message", new FirstName("John"), new LastName("Smith"));
+
+        Assert.assertEquals(getMessageData(logger, 0, "FirstName"), new FirstName("John"));
+        Assert.assertEquals(getMessageData(logger, 0, "LastName"), new LastName("Smith"));
+    }
+
+    @Test
+    public void testLogAndRichTyped(){
+        LogXLogger logger = new LogXLogger();
+
+        logger.audit("Test message", new FirstName("John"), "Favorite Integer", 137, new LastName("Smith"));
+
+        Assert.assertEquals(getMessageData(logger, 0, "FirstName"), new FirstName("John"));
+        Assert.assertEquals(getMessageData(logger, 0, "LastName"), new LastName("Smith"));
+        Assert.assertEquals(getMessageData(logger, 0, "Favorite Integer"), 137);
+    }
+
+    @Test
     public void testBegin() throws Exception {
         LogXLogger logger = new LogXLogger();
         logger.begin("Test 1", "parent1", 5.0);
-        logger.log("Test message", "data1", "Wow", "data2", 4);
+        logger.audit("Test message", "data1", "Wow", "data2", 4);
 
-        Assert.assertEquals(logger.getMessages().get(1).getData("parent1").get(), 5.0);
-        Assert.assertEquals(logger.getMessages().get(1).getData("data1").get(), "Wow");
-        Assert.assertEquals(logger.getMessages().get(1).getData("data2").get(), 4);
+        Assert.assertEquals(getMessageData(logger, 1, "parent1"), 5.0);
+        Assert.assertEquals(getMessageData(logger, 1, "data1"), "Wow");
+        Assert.assertEquals(getMessageData(logger, 1, "data2"), 4);
     }
+
+    private Object getMessageData(LogXLogger logger, int index, String data) {
+        return logger.getMessages().get(index).getData(data).get();
+    }
+
 }
