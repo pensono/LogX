@@ -3,7 +3,7 @@ package org.logx;
 /**
  * Created by Ethan Shea on 5/31/2017.
  */
-public enum LogLevel implements Comparable<LogLevel> {
+public enum LogXLevel implements Comparable<LogXLevel> {
     /**
      * Information which is not relevant to a production environment
      */
@@ -41,7 +41,7 @@ public enum LogLevel implements Comparable<LogLevel> {
 
     private int numericalLevel;
 
-    LogLevel(int numericalLevel){
+    LogXLevel(int numericalLevel){
         this.numericalLevel = numericalLevel;
     }
 }

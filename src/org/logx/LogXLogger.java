@@ -6,29 +6,38 @@ import java.util.*;
  * Created by Ethan Shea on 5/30/2017.
  */
 public class LogXLogger {
-    List<LogXRecord> messages = new ArrayList<>();
-    Optional<LogXRecord> parent = Optional.empty();
+    private LogXHandler handler;
+    Optional<LogXMessage> parent = Optional.empty();
 
-    public void begin(String what, Object... data){
-        parent = Optional.of(makeMessage(LogLevel.INFO, what, data));
-        messages.add(parent.get());
+    public LogXLogger(LogXHandler handler){
+        this.handler = handler;
     }
 
-    public void end(String what, Object... data){
+    public void begin(String message, Object... data){
+        LogXMessage record = makeMessage(LogXLevel.INFO, message, data);
+        parent = Optional.of(record);
+        log(record);
+    }
+
+    public void end(String message, Object... data){
         if (parent.isPresent()){
             parent = parent.get().getParent();
-            messages.add(makeMessage(LogLevel.INFO, what, data));
+            log(LogXLevel.INFO, message, data);
         } else {
             throw new RuntimeException("End called without a matching begin.");
         }
     }
 
-    public void log(LogLevel level, String what, Object... data){
-        messages.add(makeMessage(level, what, data));
+    public void log(LogXLevel level, String message, Object... data){
+        log(makeMessage(level, message, data));
     }
 
-    private LogXRecord makeMessage(LogLevel level, String what, Object... data){
-        return new LogXRecord(level, what, parseData(data), parent);
+    public void log(LogXMessage record){
+        handler.handle(record);
+    }
+
+    private LogXMessage makeMessage(LogXLevel level, String message, Object... data){
+        return new LogXMessage(level, message, parseData(data), parent);
     }
 
     private Map<String, Object> parseData(Object... data){
@@ -47,32 +56,27 @@ public class LogXLogger {
         return logData;
     }
 
-    public void debug(String what, Object... data){
-        log(LogLevel.DEBUG, what, data);
+    public void debug(String message, Object... data){
+        log(LogXLevel.DEBUG, message, data);
     }
 
-    public void info(String what, Object... data){
-        log(LogLevel.INFO, what, data);
+    public void info(String message, Object... data){
+        log(LogXLevel.INFO, message, data);
     }
 
-    public void audit(String what, Object... data){
-        log(LogLevel.AUDIT, what, data);
+    public void audit(String message, Object... data){
+        log(LogXLevel.AUDIT, message, data);
     }
 
-    public void fixSoon(String what, Object... data){
-        log(LogLevel.FIX_SOON, what, data);
+    public void fixSoon(String message, Object... data){
+        log(LogXLevel.FIX_SOON, message, data);
     }
 
-    public void fixEventually(String what, Object... data){
-        log(LogLevel.FIX_EVENTUALLY, what, data);
+    public void fixEventually(String message, Object... data){
+        log(LogXLevel.FIX_EVENTUALLY, message, data);
     }
 
-    public void fixImmediately(String what, Object... data){
-        log(LogLevel.FIX_IMMEDIATELY, what, data);
-    }
-
-    public List<LogXRecord> getMessages(){
-        // TODO defensive copy
-        return messages;
+    public void fixImmediately(String message, Object... data){
+        log(LogXLevel.FIX_IMMEDIATELY, message, data);
     }
 }
